@@ -21,13 +21,31 @@ class SignatureRecognition:
         self.hand_connections = mp.solutions.hands.HAND_CONNECTIONS
 
     def get_resource_path(self, relative_path):
-        """Get absolute path to resource, works for dev and for PyInstaller"""
-        if hasattr(sys, '_MEIPASS'):  # Running as bundled exe
-            base_path = sys._MEIPASS
-        else:  # Running in normal Python environment
-            base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        """Get absolute path to resource with fallbacks"""
+        possible_paths = []
 
-        return os.path.join(base_path, relative_path)
+        # PyInstaller path
+        if hasattr(sys, '_MEIPASS'):
+            possible_paths.append(os.path.join(sys._MEIPASS, relative_path))
+
+        # Development paths - try multiple options
+        script_dir = os.path.dirname(__file__)
+        possible_paths.extend([
+            os.path.abspath(os.path.join(script_dir, '..', '..', relative_path)),
+            os.path.abspath(os.path.join(script_dir, '..', relative_path)),
+            os.path.abspath(os.path.join(os.getcwd(), relative_path))
+        ])
+
+        # Try each path
+        for path in possible_paths:
+            print(f"Checking path: {path}")
+            if os.path.exists(path):
+                print(f"Found model at: {path}")
+                return path
+
+        # If we get here, we couldn't find the file
+        print(f"ERROR: Could not find {relative_path} in any of the expected locations")
+        return possible_paths[0]  # Return the first path anyway as a fallback
 
     def set_gesture_result(self, result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
         """Callback function for the gesture recognizer"""

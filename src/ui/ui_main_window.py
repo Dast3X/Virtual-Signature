@@ -1,10 +1,11 @@
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QPixmap, QImage, QMovie, QIcon
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QApplication
+from PySide6.QtGui import QPixmap, QImage, QMovie, QIcon, QAction
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QApplication, QMenuBar, QMenu
 
 from src.ui.styles.main_dock_styles import MainWindowStyles
 from src.ui.ui_camera_setting_dock import CameraSettingsDock
 from src.ui.ui_signature_settings import SignatureSettingsDock
+from src.ui.ui_about_dialog import AboutDialog
 from src.ui.utils import get_assets_path
 from src.video_thread import VideoThread
 
@@ -65,6 +66,19 @@ class MainWindow(QMainWindow):
         self.camera_dock = CameraSettingsDock(self)
         self.signature_dock = SignatureSettingsDock(self)
 
+    def initMenuBar(self) -> None:
+        # Create menu bar
+        menu_bar = self.menuBar()
+
+        # About action
+        about_action = QAction("About", self)
+        about_action.triggered.connect(self.showAboutDialog)
+        menu_bar.addAction(about_action)
+
+    def showAboutDialog(self) -> None:
+        dialog = AboutDialog(self)
+        dialog.exec()
+
     def initUI(self):
         self.initMainWindow()
         central_widget = QWidget()
@@ -72,6 +86,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         self.setWindowIcon(QIcon(get_assets_path("logo.png")))
         self.initVideoThread()
+        self.initMenuBar()  # Add this line to initialize the menu bar
+        flags = self.windowFlags()
+        flags &= ~Qt.WindowStaysOnTopHint
+        self.setWindowFlags(flags)
+        self.setWindowFlags(Qt.Window)
+
+
         self.VBL = QVBoxLayout()
         self.camera_window = QLabel()
         self.camera_window.setStyleSheet(MainWindowStyles.CAMERA_WINDOW_STYLE)

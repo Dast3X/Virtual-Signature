@@ -110,7 +110,6 @@ class CameraStyles:
             border: 1px solid #e2e8f0;
             margin: 0px 12px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
     """
 
@@ -127,7 +126,6 @@ class CameraStyles:
             border: 1px solid #bbf7d0;
             margin: 0px 12px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.1);
         }
     """
 
@@ -144,7 +142,6 @@ class CameraStyles:
             border: 1px solid #fde68a;
             margin: 0px 12px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(217, 119, 6, 0.1);
         }
     """
 
@@ -161,7 +158,6 @@ class CameraStyles:
             border: 1px solid #fecaca;
             margin: 0px 12px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
         }
     """
 

@@ -101,19 +101,35 @@ class VideoThread(QThread):
 
     def camera_init(self):
         """Initialize the camera with the specified settings"""
-        self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
-        self.cap.set(cv2.CAP_PROP_FPS, self.fps_cap)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.resolution[0])
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.resolution[1])
-        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-        if not self.cap.isOpened():
-            print(f"[ERROR] camera is closed {self.camera_index}")
-            return
+        try:
+            print(f"[INFO] Initializing camera {self.camera_index}")
+            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
 
-        # Initialize drawing board
-        self.window_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.window_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        self.drawing_board = np.zeros((int(self.window_height), int(self.window_width), 3), dtype=np.uint8)
+            if not self.cap.isOpened():
+                print(
+                    f"[ERROR] Failed to open camera {self.camera_index} with cv2.CAP_DSHOW, trying without specific API")
+                self.cap = cv2.VideoCapture(self.camera_index)  # Try without specifying API
+
+            if not self.cap.isOpened():
+                print(f"[ERROR] Camera {self.camera_index} still not opening, trying index 0")
+                self.cap = cv2.VideoCapture(0)  # Fall back to default camera
+
+            if self.cap.isOpened():
+                print("[INFO] Camera opened successfully")
+                self.cap.set(cv2.CAP_PROP_FPS, self.fps_cap)
+                self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.resolution[0])
+                self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.resolution[1])
+                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+
+                # Initialize drawing board
+                self.window_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                self.window_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                self.drawing_board = np.zeros((int(self.window_height), int(self.window_width), 3), dtype=np.uint8)
+                print(f"[INFO] Drawing board initialized with size {self.window_width}x{self.window_height}")
+            else:
+                print("[ERROR] Failed to open any camera")
+        except Exception as e:
+            print(f"[ERROR] Exception in camera_init: {str(e)}")
 
     def is_signature_valid(self):
         """Check if signature has enough points to be valid"""
@@ -171,7 +187,7 @@ class VideoThread(QThread):
             if gesture_result.hand_landmarks and self.dev_mode:
                 for hand_landmarks in gesture_result.hand_landmarks:
                     # Get hand landmark context from SignatureRecognition
-                    hand_connections = SignatureRecognition().hand_connections
+                    hand_connections = self.sign_model.hand_connections
 
                     for point in hand_landmarks:
                         # Draw landmarks as circles
@@ -368,7 +384,7 @@ class VideoThread(QThread):
         self.camera_init()
 
         # Signature Recognition
-        sign_model = SignatureRecognition()
+        self.sign_model = SignatureRecognition()
 
         # Initialize time for FPS calculation
         if self.dev_mode:
@@ -388,7 +404,7 @@ class VideoThread(QThread):
         # If fps_cap is 60, skip_frames will be 1 (process every other frame)
         skip_frames = max(0, int(self.fps_cap / 30) - 1)
 
-        with sign_model.recognizer_context_manager() as recognizer:
+        with self.sign_model.recognizer_context_manager() as recognizer:
             while self.ThreadActive:
                 ret, frame = self.cap.read()
 
@@ -401,12 +417,12 @@ class VideoThread(QThread):
 
                     if process_this_frame:
                         # Process frame with MediaPipe
-                        mp_image = sign_model.convert_frame_to_mediapipe_image(frame)
+                        mp_image = self.sign_model.convert_frame_to_mediapipe_image(frame)
                         recognizer.recognize_async(mp_image, self.timestamp_ms)
                         self.timestamp_ms += 1
 
                         # Get gesture recognition results and update the last result
-                        last_gesture_result = sign_model.get_result()
+                        last_gesture_result = self.sign_model.get_result()
 
                     # This ensures wireframe isn't flickering between processed frames
                     gesture_result = last_gesture_result
