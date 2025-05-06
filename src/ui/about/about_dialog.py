@@ -1,5 +1,5 @@
-from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtGui import QPixmap, QFont
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.ui.styles.about_styles import AboutDialogStyles
-from src.ui.utils import get_assets_path
+from src.utils.utils import get_assets_path
 
 
 class AboutDialog(QDialog):

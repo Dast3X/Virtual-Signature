@@ -17,6 +17,7 @@ class VideoThread(QThread):
     processing frames, and handling gestures.
     """
     ImageUpdate = Signal(QImage)
+    StatusUpdate = Signal()  # New signal for updating status bar
     _instance = None
 
     # Color constants
@@ -56,6 +57,9 @@ class VideoThread(QThread):
             self.signature_points = []
             self.min_signature_points = 200
             self.is_drawing_active = False
+
+            # Status bar variables
+            self.current_finger_position = (0, 0)  # Initialize finger position
 
             # Variables for tracking Thumb_Up gesture
             self.thumb_up_start_time = None
@@ -141,6 +145,10 @@ class VideoThread(QThread):
             self.drawing_board = np.zeros((int(self.window_height), int(self.window_width), 3), dtype=np.uint8)
             self.previous_x, self.previous_y = None, None
             self.signature_points = []
+            # Reset finger position when clearing
+            self.current_finger_position = (0, 0)
+            # Emit signal to update status bar
+            self.StatusUpdate.emit()
 
     def save_signature(self):
         """Save the signature to a file"""
@@ -332,6 +340,11 @@ class VideoThread(QThread):
                 index_finger = gesture_result.hand_landmarks[0][8]
                 x, y = int(index_finger.x * frame.shape[1]), int(index_finger.y * frame.shape[0])
 
+                # Update current finger position for status bar
+                self.current_finger_position = (x, y)
+                # Emit signal to update status bar
+                self.StatusUpdate.emit()
+
                 if self.previous_x is not None and self.previous_y is not None:
                     cv2.line(self.drawing_board, (self.previous_x, self.previous_y), (x, y), self.GREEN, 5)
                     # Add points for signature size validation
@@ -364,6 +377,13 @@ class VideoThread(QThread):
                 # Stop drawing for other gestures
                 self.previous_x, self.previous_y = None, None
                 self.thumb_up_start_time = None
+
+                # Update finger position if still tracking landmarks
+                if gesture_result.hand_landmarks:
+                    index_finger = gesture_result.hand_landmarks[0][8]
+                    x, y = int(index_finger.x * frame.shape[1]), int(index_finger.y * frame.shape[0])
+                    self.current_finger_position = (x, y)
+                    self.StatusUpdate.emit()
         else:
             # Reset timer if no gestures are detected
             self.thumb_up_start_time = None

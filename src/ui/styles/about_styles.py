@@ -1,6 +1,5 @@
 class AboutDialogStyles:
     """Updated modern styles for the About dialog."""
-
     DIALOG_STYLE = """
         QDialog {
             background-color: #FFFFFF;
@@ -18,6 +17,7 @@ class AboutDialogStyles:
     """
 
     TEXT_STYLE = """
+
         QLabel {
             color: #555555;
             font-size: 10.5pt;
@@ -39,7 +39,7 @@ class AboutDialogStyles:
         QPushButton:hover {
             background-color: #42A5F5;
         }
-
+        
         QPushButton:pressed {
             background-color: #1E88E5;
         }

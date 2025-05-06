@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.ui.styles.signature_styles import SignatureStyles
-from src.ui.utils import get_assets_path
+from src.utils.utils import get_assets_path
 from src.video_thread import VideoThread
 
 

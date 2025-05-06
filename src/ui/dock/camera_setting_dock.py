@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.ui.styles.camera_dock_styles import CameraStyles
-from src.ui.utils import get_assets_path
+from src.utils.utils import get_assets_path
 from src.video_thread import VideoThread
 
 
