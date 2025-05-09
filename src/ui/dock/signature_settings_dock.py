@@ -198,7 +198,7 @@ class SignatureSettingsDock(QDockWidget):
 
     def on_dev_mode_changed(self, state):
         """Handle dev mode checkbox state change"""
-        self.VideoThread.dev_mode = state
+        self.VideoThread.dev_mode = self.dev_mode_checkbox.isChecked()
 
     def on_min_distance_changed(self, value):
         """Handle minimum distance slider value change"""

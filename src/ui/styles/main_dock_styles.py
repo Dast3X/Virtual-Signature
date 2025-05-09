@@ -45,4 +45,4 @@ class MainWindowStyles:
     # Layout constants
     LOADING_GIF_SIZE = (128, 128)
     CAMERA_MIN_SIZE = (640, 480)
-    WINDOW_TITLE = "DeepSign"
+    WINDOW_TITLE = "DeepSignus"

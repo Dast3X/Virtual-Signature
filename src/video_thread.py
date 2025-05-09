@@ -332,8 +332,7 @@ class VideoThread(QThread):
 
             # Check if the hand is at a valid distance before processing gestures
             is_distance_valid = self.check_distance(gesture_result.hand_landmarks)
-
-            if gesture_name == "Pointing_Up" and is_distance_valid:
+            if (gesture_name == "Pointing_Up" or self.sign_model.is_pointing_up()) and is_distance_valid:
                 self.is_drawing_active = True
                 self.thumb_up_start_time = None
 

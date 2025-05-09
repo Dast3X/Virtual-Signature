@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QStatusBar, QLabel, QHBoxLayout, QWidget, QSpacerItem, QSizePolicy
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QStatusBar, QLabel, QHBoxLayout, QWidget, QSpacerItem, QSizePolicy
 
 
 class StatusBar(QStatusBar):

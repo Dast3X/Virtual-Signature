@@ -30,7 +30,7 @@ class AboutDialog(QDialog):
         logo.setContentsMargins(0, 10, 0, 10)
 
         # Title
-        title = QLabel("DeepSign", self)
+        title = QLabel("DeepSignus", self)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(AboutDialogStyles.TITLE_STYLE)
 

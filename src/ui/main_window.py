@@ -1,12 +1,13 @@
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QImage, QMovie, QIcon, QAction
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QApplication
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QApplication, QMenu
 
+from src.ui.about.about_dialog import AboutDialog
+from src.ui.dock.camera_setting_dock import CameraSettingsDock
+from src.ui.dock.signature_settings_dock import SignatureSettingsDock
+from src.ui.help.help_dialog import HelpDialog
 from src.ui.status.status_bar import StatusBar
 from src.ui.styles.main_dock_styles import MainWindowStyles
-from src.ui.dock.camera_setting_dock import CameraSettingsDock
-from src.ui.dock.signature_settings import SignatureSettingsDock
-from src.ui.about.about_dialog import AboutDialog
 from src.utils.utils import get_assets_path
 from src.video_thread import VideoThread
 
@@ -20,36 +21,34 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.VideoThread.isRunning():
             self.VideoThread.stop()
+        self.VideoThread.ImageUpdate.disconnect(self.updateImage)
+        self.VideoThread.StatusUpdate.disconnect(self.updateStatusBar)
         event.accept()
 
     def updateImage(self, image: QImage):
-        if not image.isNull():
-            # Stop any loading animation if it's playing
-            if self.loading_movie.state() == QMovie.Running:
-                self.loading_movie.stop()
-            self.camera_window.setMovie(None)
+        if image and not image.isNull():
+            self.stopLoading()
             self.camera_window.setPixmap(QPixmap.fromImage(image))
-        elif self.VideoThread.is_changing_settings:
-            # Show loading animation
-            self.camera_window.setText("")
-            self.camera_window.setMovie(self.loading_movie)
-            if self.loading_movie.state() != QMovie.Running:
-                self.loading_movie.start()
-        elif not self.VideoThread.isRunning():
-            # Stop any loading animation
-            if self.loading_movie.state() == QMovie.Running:
-                self.loading_movie.stop()
-            self.camera_window.setMovie(None)
-            self.camera_window.setText("No capture 😠")
         else:
-            # Show loading animation
-            self.camera_window.setText("")
-            self.camera_window.setMovie(self.loading_movie)
-            if self.loading_movie.state() != QMovie.Running:
-                self.loading_movie.start()
+            self.camera_window.setPixmap(QPixmap())
+            self.startLoading() if self.VideoThread.is_changing_settings or self.VideoThread.isRunning() else self.showNoCapture()
 
-        # Update status bar with signature points count
         self.updateStatusBar()
+
+    def startLoading(self):
+        self.camera_window.setText("")
+        self.camera_window.setMovie(self.loading_movie)
+        if self.loading_movie.state() != QMovie.Running:
+            self.loading_movie.start()
+
+    def stopLoading(self):
+        if self.loading_movie.state() == QMovie.Running:
+            self.loading_movie.stop()
+        self.camera_window.setMovie(None)
+
+    def showNoCapture(self):
+        self.stopLoading()
+        self.camera_window.setText("No capture 😠")
 
     def initMainWindow(self) -> None:
         screen_rect = QApplication.primaryScreen().availableGeometry()
@@ -75,10 +74,22 @@ class MainWindow(QMainWindow):
         # Create menu bar
         menu_bar = self.menuBar()
 
+        # Help menu
+        help_menu = QMenu("Help", self)
+
+        # Help action
+        help_action = QAction("User Guide", self)
+        help_action.setShortcut("F1")
+        help_action.triggered.connect(self.showHelpDialog)
+        help_menu.addAction(help_action)
+
         # About action
         about_action = QAction("About", self)
         about_action.triggered.connect(self.showAboutDialog)
-        menu_bar.addAction(about_action)
+        help_menu.addAction(about_action)
+
+        # Add Help menu to menu bar
+        menu_bar.addMenu(help_menu)
 
     def initStatusBar(self) -> None:
         self.statusbar = StatusBar(self)
@@ -92,6 +103,10 @@ class MainWindow(QMainWindow):
 
     def showAboutDialog(self) -> None:
         dialog = AboutDialog(self)
+        dialog.exec()
+
+    def showHelpDialog(self) -> None:
+        dialog = HelpDialog(self)
         dialog.exec()
 
     def initUI(self):

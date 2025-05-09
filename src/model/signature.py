@@ -77,6 +77,41 @@ class SignatureRecognition:
         """Return the current gesture recognition result"""
         return self.gesture_result
 
+    def is_pointing_up(self):
+        """
+        Check if only index finger is up (pointing up gesture).
+        Returns 'pointing_up' if the condition is met, None otherwise.
+        """
+        result = self.get_result()
+
+        if not result or not result.gestures or not result.hand_landmarks or not result.gestures[0][
+                                                                                     0].category_name == "None":
+            return None
+
+        if len(result.hand_landmarks) == 1:
+
+            landmarks = result.hand_landmarks[0]
+
+            index_tip = landmarks[8]
+            index_base = landmarks[5]
+
+            if index_tip.y < index_base.y:
+                middle_tip = landmarks[12]  # Middle finger tip
+                middle_base = landmarks[9]  # Middle finger base
+
+                ring_tip = landmarks[16]  # Ring finger tip
+                ring_base = landmarks[13]  # Ring finger base
+
+                pinky_tip = landmarks[20]  # Pinky tip
+                pinky_base = landmarks[17]  # Pinky base
+
+                # Check if other fingers are bent (not extended)
+                if (middle_tip.y > middle_base.y and
+                        ring_tip.y > ring_base.y and
+                        pinky_tip.y > pinky_base.y):
+                    return True
+        return False
+
     def recognizer_context_manager(self):
         """Return the recognizer as context manager for use in with statement"""
         return self.setup_recognizer()
