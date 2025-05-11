@@ -104,6 +104,10 @@ def run_test_module(test_file):
 
 def find_test_files(directory="./scripts"):
     """Find all test_*.py files in the directory."""
+    if not os.path.exists(directory):
+        print(f"Directory not found: {directory}")
+        return []
+    
     test_files = []
     for file in os.listdir(directory):
         if file.startswith("test_") and file.endswith(".py"):
