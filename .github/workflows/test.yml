@@ -22,16 +22,12 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y xvfb libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0 libegl1-mesa libegl1 libgl1-mesa-glx libglu1-mesa
-    
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
+        sudo apt-get install -y xvfb libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0
         sudo apt-get install -y software-properties-common
         sudo add-apt-repository ppa:oibaf/graphics-drivers -y
         sudo apt-get update
-        sudo apt-get install -y xvfb libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0 libegl1 libgl1-mesa-glx
-        
+        sudo apt-get install -y libegl1 libgl1-mesa-glx
+    
     - name: Run tests with xvfb
       run: |
         xvfb-run python tests/run_tests.py
