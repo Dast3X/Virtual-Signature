@@ -16,7 +16,7 @@ class TestCameraSettingsDock(unittest.TestCase):
         cls.app = QApplication.instance() or QApplication(sys.argv)
 
     def setUp(self):
-        """Set up each test by creating a CameraSettingsDock instance."""
+        """Set up each tests by creating a CameraSettingsDock instance."""
         # Mock VideoThread
         self.video_thread_patcher = patch('src.ui.dock.camera_setting_dock.VideoThread')
         self.mock_video_thread_class = self.video_thread_patcher.start()
@@ -38,7 +38,7 @@ class TestCameraSettingsDock(unittest.TestCase):
         self.dock.fpsUpdateTimer.stop()
 
     def tearDown(self):
-        """Clean up after each test."""
+        """Clean up after each tests."""
         self.video_thread_patcher.stop()
         self.media_devices_patcher.stop()
         self.dock.close()

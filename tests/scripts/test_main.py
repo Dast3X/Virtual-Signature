@@ -18,7 +18,7 @@ class TestMainWindow(unittest.TestCase):
         cls.app = QApplication.instance() or QApplication(sys.argv)
 
     def setUp(self):
-        """Set up each test by creating a MainWindow instance."""
+        """Set up each tests by creating a MainWindow instance."""
         # Mock the VideoThread to avoid actual camera access
         with patch('src.ui.main_window.VideoThread') as mock_video_thread:
             mock_thread_instance = MagicMock()
@@ -29,7 +29,7 @@ class TestMainWindow(unittest.TestCase):
             self.window = MainWindow()
 
     def tearDown(self):
-        """Clean up after each test."""
+        """Clean up after each tests."""
         self.window.close()
 
     def test_window_title(self):
@@ -97,7 +97,7 @@ class TestMainWindow(unittest.TestCase):
 
     def test_update_status_bar(self):
         """Test that updateStatusBar updates the status bar."""
-        # Set up test data
+        # Set up tests data
         self.window.VideoThread.signature_points = [(10, 10), (20, 20), (30, 30)]
         self.window.VideoThread.current_finger_position = (50, 60)
 

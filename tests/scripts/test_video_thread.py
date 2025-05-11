@@ -17,7 +17,7 @@ class TestVideoThread(unittest.TestCase):
         cls.app = QApplication.instance() or QApplication(sys.argv)
 
     def setUp(self):
-        """Set up each test by creating a VideoThread instance."""
+        """Set up each tests by creating a VideoThread instance."""
         # Since VideoThread is a singleton, we need to reset it
         VideoThread._instance = None
 
@@ -39,7 +39,7 @@ class TestVideoThread(unittest.TestCase):
         self.mock_sign_model = self.sign_model_patcher.start()
 
     def tearDown(self):
-        """Clean up after each test."""
+        """Clean up after each tests."""
         self.patcher.stop()
         self.sign_model_patcher.stop()
 

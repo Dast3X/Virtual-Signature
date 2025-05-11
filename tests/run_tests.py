@@ -25,7 +25,7 @@ class TestResults:
         })
 
     def generate_table(self):
-        """Generate a markdown table with the test results."""
+        """Generate a markdown table with the tests results."""
         if not self.results:
             return "No tests were run."
 
@@ -42,7 +42,7 @@ class TestResults:
         table += "| Test File | Total Tests | Passed | Failed | Errors | Time (s) | Status |\n"
         table += "|-----------|-------------|--------|--------|--------|----------|--------|\n"
 
-        # Add rows for each test file
+        # Add rows for each tests file
         for result in self.results:
             status = "PASS" if result["failures"] == 0 and result["errors"] == 0 else "FAIL"
             table += f"| {result['test_file']} | {result['total_tests']} | {result['passed']} | {result['failures']} | {result['errors']} | {result['time_taken']:.3f} | {status} |\n"
@@ -59,20 +59,20 @@ class TestResults:
 
 
 def run_test_module(test_file):
-    """Run a test module and return the results."""
+    """Run a tests module and return the results."""
     # Extract just the filename without extension
     module_name = os.path.splitext(os.path.basename(test_file))[0]
 
-    # Load the test module from the file
+    # Load the tests module from the file
     spec = importlib.util.spec_from_file_location(module_name, test_file)
     test_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(test_module)
 
-    # Create a test loader and load the tests from the module
+    # Create a tests loader and load the tests from the module
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromModule(test_module)
 
-    # Redirect stdout during test execution
+    # Redirect stdout during tests execution
     original_stdout = sys.stdout
     captured_output = StringIO()
     sys.stdout = captured_output
@@ -115,16 +115,16 @@ def main():
     # Create a QApplication instance if needed
     app = QApplication.instance() or QApplication(sys.argv)
 
-    # Find all test files
+    # Find all tests files
     test_files = find_test_files()
     if not test_files:
-        print("No test files found in the current directory.")
+        print("No tests files found in the current directory.")
         return
 
     # Initialize results tracker
     results = TestResults()
 
-    # Run each test file
+    # Run each tests file
     for test_file in test_files:
         print(f"\nRunning tests in {test_file}...")
         test_result = run_test_module(test_file)

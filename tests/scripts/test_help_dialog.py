@@ -28,11 +28,11 @@ class TestHelpDialog(unittest.TestCase):
             cls.app = QApplication.instance()
 
     def setUp(self):
-        """Set up a new dialog for each test."""
+        """Set up a new dialog for each tests."""
         self.dialog = HelpDialog()
 
     def tearDown(self):
-        """Clean up after each test."""
+        """Clean up after each tests."""
         self.dialog.close()
         self.dialog = None
 
