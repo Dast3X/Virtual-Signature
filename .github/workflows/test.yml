@@ -23,8 +23,13 @@ jobs:
           sudo apt-get install -y software-properties-common
           sudo add-apt-repository -y ppa:oibaf/graphics-drivers
           sudo apt-get update
-          sudo apt-get install -y libegl1-mesa libxcb-xinerama0
+          sudo apt-get install -y libegl1-mesa libxcb-xinerama0 xvfb
           pip install -r requirements.txt
+
+      - name: Start virtual display
+        run: |
+          Xvfb :99 -screen 0 1280x1024x24 &
+          export DISPLAY=:99
 
       - name: Run tests
         run: python tests/run_tests.py
