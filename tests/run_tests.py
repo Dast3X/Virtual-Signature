@@ -10,12 +10,6 @@ from io import StringIO
 from PySide6.QtWidgets import QApplication
 
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-SRC_PATH = os.path.join(PROJECT_ROOT, "src")
-
-if SRC_PATH not in sys.path:
-    sys.path.insert(0, SRC_PATH)
-
 class TestResults:
     def __init__(self):
         self.results = []
@@ -108,19 +102,12 @@ def run_test_module(test_file):
     }
 
 
-def find_test_files():
-    """Find all test_*.py files in the scripts directory relative to this script."""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    scripts_dir = os.path.join(base_dir, "scripts")
-
-    if not os.path.exists(scripts_dir):
-        print(f"Directory not found: {scripts_dir}")
-        return []
-
+def find_test_files(directory="./scripts"):
+    """Find all test_*.py files in the directory."""
     test_files = []
-    for file in os.listdir(scripts_dir):
+    for file in os.listdir(directory):
         if file.startswith("test_") and file.endswith(".py"):
-            test_files.append(os.path.join(scripts_dir, file))
+            test_files.append(os.path.join(directory, file))
     return test_files
 
 
