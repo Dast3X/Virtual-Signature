@@ -1,5 +1,7 @@
 import os
+import platform
 import time
+
 from datetime import datetime
 
 import cv2
@@ -104,36 +106,103 @@ class VideoThread(QThread):
         self.cap.set(cv2.CAP_PROP_SETTINGS, 1)
 
     def camera_init(self):
-        """Initialize the camera with the specified settings"""
+        """Initialize the camera with the specified settings in a cross-platform way"""
         try:
             print(f"[INFO] Initializing camera {self.camera_index}")
-            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
 
-            if not self.cap.isOpened():
-                print(
-                    f"[ERROR] Failed to open camera {self.camera_index} with cv2.CAP_DSHOW, trying without specific API")
-                self.cap = cv2.VideoCapture(self.camera_index)  # Try without specifying API
-
-            if not self.cap.isOpened():
-                print(f"[ERROR] Camera {self.camera_index} still not opening, trying index 0")
-                self.cap = cv2.VideoCapture(0)  # Fall back to default camera
-
-            if self.cap.isOpened():
-                print("[INFO] Camera opened successfully")
-                self.cap.set(cv2.CAP_PROP_FPS, self.fps_cap)
-                self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.resolution[0])
-                self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.resolution[1])
-                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-
-                # Initialize drawing board
-                self.window_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-                self.window_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-                self.drawing_board = np.zeros((int(self.window_height), int(self.window_width), 3), dtype=np.uint8)
-                print(f"[INFO] Drawing board initialized with size {self.window_width}x{self.window_height}")
+            # Choose backend depending on OS
+            system_platform = platform.system()
+            if system_platform == "Windows":
+                self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+                print("[INFO] Using backend: CAP_DSHOW (Windows)")
             else:
+                self.cap = cv2.VideoCapture(self.camera_index)  # Default backend for Linux/macOS
+                print("[INFO] Using default backend (non-Windows)")
+
+            # Retry logic
+            if not self.cap.isOpened():
+                print(f"[WARNING] Failed to open camera {self.camera_index}. Trying default index 0.")
+                self.cap.release()
+                self.cap = cv2.VideoCapture(0)
+
+            if not self.cap.isOpened():
                 print("[ERROR] Failed to open any camera")
+                return False
+
+            print("[INFO] Camera opened successfully")
+
+            # Set camera properties
+            self.cap.set(cv2.CAP_PROP_FPS, self.fps_cap)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.resolution[0])
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.resolution[1])
+
+            # Check if MJPG is supported
+            print("[INFO] Checking supported codecs...")
+
+            available_codecs = self.check_supported_codecs()
+
+            if "MJPG" in available_codecs:
+                print("[INFO] MJPG codec is supported, setting MJPG codec.")
+                fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+                self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+            else:
+                print("[WARNING] MJPG not supported, trying YUYV codec.")
+                if "YUYV" in available_codecs:
+                    fourcc = cv2.VideoWriter_fourcc(*"YUYV")
+                    self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+                else:
+                    print("[ERROR] Neither MJPG nor YUYV codecs are supported. Using default settings.")
+
+            # Check if the codec was actually applied
+            actual_fourcc = int(self.cap.get(cv2.CAP_PROP_FOURCC))
+            codec = "".join([chr((actual_fourcc >> 8 * i) & 0xFF) for i in range(4)])
+            print(f"[INFO] Camera FOURCC codec in use: {codec}")
+
+            # Initialize drawing board
+            self.window_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            self.window_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self.drawing_board = np.zeros((self.window_height, self.window_width, 3), dtype=np.uint8)
+            print(f"[INFO] Drawing board initialized with size {self.window_width}x{self.window_height}")
+
+            return True
+
         except Exception as e:
             print(f"[ERROR] Exception in camera_init: {str(e)}")
+            return False
+
+    def check_supported_codecs(self):
+        """
+        Check for the available codecs supported by OpenCV based on the current platform.
+        Returns a list of supported codec names (as strings).
+        """
+        supported_codecs = []
+
+        # Try MJPG, YUYV and others
+        try:
+            mjpg_fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+            if mjpg_fourcc != 0:
+                supported_codecs.append("MJPG")
+        except Exception as e:
+            print(f"[INFO] MJPG codec check failed: {e}")
+
+        try:
+            yuyv_fourcc = cv2.VideoWriter_fourcc(*"YUYV")
+            if yuyv_fourcc != 0:
+                supported_codecs.append("YUYV")
+        except Exception as e:
+            print(f"[INFO] YUYV codec check failed: {e}")
+
+        # Add more codecs to check here if needed
+        # Example for H264
+        try:
+            h264_fourcc = cv2.VideoWriter_fourcc(*"H264")
+            if h264_fourcc != 0:
+                supported_codecs.append("H264")
+        except Exception as e:
+            print(f"[INFO] H264 codec check failed: {e}")
+
+        print(f"[INFO] Available codecs: {supported_codecs}")
+        return supported_codecs
 
     def is_signature_valid(self):
         """Check if signature has enough points to be valid"""
